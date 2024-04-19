@@ -31,6 +31,9 @@
 **********************************************************************/
 '''
 '''
+2024
+Apr
+After subset if equation has direct molecule (which name become as concInit) and summation, then that is removed in the layout
 2022
 Nov
 no-group -ng (showGroup default True)
@@ -183,7 +186,6 @@ def writeFuncedge(nIndex,ps,reac_edgelist,specieslist_rec,edge_weight,edge_arrow
 		reac_edgelist = reac_edgelist+"\n"+ps[2]+"[label=\"+\",shape=circle,width=0, height=0, margin=0]"
 	elif ps[2].startswith("sigma"):
 		reac_edgelist = reac_edgelist+"\n"+ps[2]+"[label=<&Sigma;>,shape=circle,width=0, height=0, margin=0]"
-
 	reac_edgelist =reac_edgelist+"\n"+ps0+"->"+ps[2]+"[arrowhead ="+str(arrowtype)+" weight = "+str(edge_weight)+ " minlen = 1 arrowsize = "+str(edge_arrowsize)+" color=\""+reaction_color+"\" fontsize="+str(fontsize)
 	if ps[0] not in specieslist_rec:
 		specieslist_rec.append(ps0)
@@ -460,12 +462,13 @@ def writeSpecies(groupmap):
 			spe_color,mIndex = getColor(mIndex)
 			node_color[molname] = spe_color
 		spelist.append(molname)
-		if mol.grp in groupmap:
-			groupmap[mol.grp].append(molname)
-			specieslist[mol.grp].append({"name":molname,"value":mol.concInit})
-		else:
-			groupmap[mol.grp] = [molname]
-			specieslist[mol.grp] = [{"name":molname,"value":mol.concInit}]
+		if molname != 'concInit':
+			if mol.grp in groupmap:
+				groupmap[mol.grp].append(molname)
+				specieslist[mol.grp].append({"name":molname,"value":mol.concInit})
+			else:
+				groupmap[mol.grp] = [molname]
+				specieslist[mol.grp] = [{"name":molname,"value":mol.concInit}]
 	return specieslist,node_color,spelist
 		
 def writeFunc(groupmap):
@@ -488,31 +491,35 @@ def writeFunc(groupmap):
 		if allpluse:
 			plusesize = "pluse"+str(equation_pluse)
 			equation_pluse+=1
-			groupmap[t.grp].append(plusesize)
+			#groupmap[t.grp].append(plusesize)
 			
 		else:
 			plusesize = "sigma"+str(equation_sigma)
 			equation_sigma+=1
-			groupmap[t.grp].append(plusesize)
-			
+			#groupmap[t.grp].append(plusesize)
 		for tsubs in unique(t.subs):
 			c = countX(t.subs,tsubs)
-			subgroup = [key for key,value in groupmap.items() if tsubs in value][0]
-			if subgroup not in groupTogroup:
-				groupTogroup[subgroup] = {t.grp:[((tsubs,t.name,plusesize,c))]}		
-			else:
-				'''  
-					A: {A:((list of values)())
-						B : ((list of values))
-						}
-				'''
-				if t.grp in groupTogroup[subgroup].keys():
-					groupTogroup[subgroup][t.grp].append(((tsubs,t.name,plusesize,c)))
+			if tsubs != 'concInit':
+				if allpluse:
+					groupmap[t.grp].append(plusesize)
 				else:
-					''' under subgroup, reac.grp exist then update the connect to the same list
-						A :{A:((list of values),( list of values))}
+					groupmap[t.grp].append(plusesize)
+				subgroup = [key for key,value in groupmap.items() if tsubs in value][0]
+				if subgroup not in groupTogroup:
+					groupTogroup[subgroup] = {t.grp:[((tsubs,t.name,plusesize,c))]}		
+				else:
+					'''  
+						A: {A:((list of values)())
+							B : ((list of values))
+							}
 					'''
-					groupTogroup[subgroup].update({t.grp:[((tsubs,t.name,plusesize,c))]})
+					if t.grp in groupTogroup[subgroup].keys():
+						groupTogroup[subgroup][t.grp].append(((tsubs,t.name,plusesize,c)))
+					else:
+						''' under subgroup, reac.grp exist then update the connect to the same list
+							A :{A:((list of values),( list of values))}
+						'''
+						groupTogroup[subgroup].update({t.grp:[((tsubs,t.name,plusesize,c))]})
 	
 	return funclist
 
