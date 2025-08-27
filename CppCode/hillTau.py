@@ -428,16 +428,17 @@ def main():
         ylabel = 'Conc (mM)'
         qs = 1
 
-    for name in clPlots:
-        mi = model.molInfo[name]
-        i = mi.index
-        plt.plot( x, plotvec[i]/qs, label = name )
-
-    plt.xlabel('Time (s)')
-    plt.ylabel(ylabel)
-    plt.title( args.model )
-    plt.legend()
-    plt.show()
+    if len( clPlots ) > 0:
+        for name in clPlots:
+            mi = model.molInfo[name]
+            i = mi.index
+            plt.plot( x, plotvec[i]/qs, label = name )
+    
+        plt.xlabel('Time (s)')
+        plt.ylabel(ylabel)
+        plt.title( args.model )
+        plt.legend()
+        plt.show()
 
 
 if __name__ == '__main__':
