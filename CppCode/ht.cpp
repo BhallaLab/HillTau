@@ -475,7 +475,7 @@ void Model::advance( double runtime, int settle )
 	if (runtime < 10e-6) return;
 	if (settle) {
 		/// double newdt = runtime / 10.0;
-		double newdt = runtime / 50.0;
+		double newdt = runtime * INTERNAL_DT_SCALE;
 		innerAdvance( runtime, newdt );
 	} else {
 		double newdt = min( dt, internalDt);
@@ -491,6 +491,18 @@ void Model::advance( double runtime, int settle )
 			innerAdvance( runtime, newdt );
 		}
 	}
+}
+
+void Model::advancePlot( double t )
+{
+	if ( plotNames.size() == 0 ) {
+		plotvec.push_back( conc ); // This will need to be transposed.
+	} else {
+		for (unsigned int ii = 0; ii < plotIdx.size(); ii++ ) {
+			plotvec[ii].push_back( conc[plotIdx[ii]] );
+		}
+	}
+	plotTimePoints.push_back( t );
 }
 
 void Model::innerAdvance( double runtime, double newdt )
@@ -509,7 +521,7 @@ void Model::innerAdvance( double runtime, double newdt )
 		}
 
 		if ( floor( (currentTime + t + newdt ) / dt ) > step ) {
-			plotvec.push_back( conc );
+			advancePlot( currentTime + t + newdt );
 			step += 1;
 		}
 	}
@@ -575,7 +587,12 @@ void Model::reinit()
 	}
 
 	plotvec.clear();
-	plotvec.push_back( conc );
+	if ( plotIdx.size() > 0) {
+		assert( plotIdx.size() <= molInfo.size() );
+		plotvec.resize( plotIdx.size() );
+	}
+	plotTimePoints.clear();
+	advancePlot( 0.0 );
 }
 
 void Model::makeReac( const string & name, const string & grp, 
@@ -629,6 +646,18 @@ void Model::makeEqn( const string & name, const string & grp, const string& expr
 void Model::addGrp( const string& grpname )
 {
 	grpInfo.push_back( grpname );
+}
+
+void Model::addPlot( const string& plotname )
+{
+	try {
+		auto mi = molInfo.at( plotname );
+		plotNames.push_back( plotname );
+		plotIdx.push_back( mi->index );
+    } catch ( const std::out_of_range& e ) {
+		cerr << "Error: HillTau::addPlot: Molecule '" + plotname + "' not found.\n" ;
+		std::exit( EXIT_FAILURE );
+    }
 }
 
 vector< double > Model::getConcVec( int index ) const

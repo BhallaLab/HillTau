@@ -98,6 +98,9 @@ class Model
 			map< string, ReacInfo* > reacInfo;
 			map< string, EqnInfo* > eqnInfo;
 			vector< string > grpInfo;
+			vector< string > plotNames;
+			vector< int > plotIdx;
+			vector< double > plotTimePoints;
 			map< string, double > namedConsts;
 			double currentTime;
 			int step;
@@ -112,10 +115,12 @@ class Model
 			void makeReac( const string & name, const string & grp, const vector< string >& subs, const map< string, double >& reacObj );
 			void makeEqn( const string & name, const string & grp, const string& expr, const vector< string >& eqnSubs );
 			void addGrp( const string& grpname );
+			void addPlot( const string& plotname );
 			void setReacSeqDepth( int order );
 			void assignReacSeq( const string& name, int seq );
 			void advance( double runtime, int settle );
 			void innerAdvance( double runtime, double newdt );
+			void advancePlot( double t );
 			void allocConc();
 			void parseEqns();
 			void reinit();

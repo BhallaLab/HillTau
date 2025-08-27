@@ -396,8 +396,12 @@ def main():
 
     stimvec.sort( key = Stim.stimOrder )
     model.modifySched( saveList = [], deleteList = list( set( stimMolNames ) ) )
+    clPlots = args.plots.split(',')
+    if len( args.plots ) > 0 :
+        #clPlots = [ i.strip() for i in clPlots if i in model.molInfo]
+        for pp in clPlots:
+            model.addPlot( pp )
     
-
     model.reinit()
     currTime = 0.0
     for s in stimvec:
@@ -407,13 +411,7 @@ def main():
     if runtime > currTime:
         model.advance( runtime - currTime )
 
-    plotvec = np.transpose( np.array( model.plotvec ) )
-    x = np.array( range( plotvec.shape[1] ) ) * model.dt
-    clPlots = args.plots.split(',')
-    if len( args.plots ) > 0 :
-        clPlots = [ i.strip() for i in clPlots if i in model.molInfo]
-    else: 
-        clPlots = [ i for i in model.molInfo ]
+    x = model.plotTimePoints
 
     if args.output:
         writeOutput( args.output, model, plotvec, x )
@@ -428,17 +426,18 @@ def main():
         ylabel = 'Conc (mM)'
         qs = 1
 
-    if len( clPlots ) > 0:
-        for name in clPlots:
-            mi = model.molInfo[name]
-            i = mi.index
-            plt.plot( x, plotvec[i]/qs, label = name )
-    
-        plt.xlabel('Time (s)')
-        plt.ylabel(ylabel)
-        plt.title( args.model )
-        plt.legend()
-        plt.show()
+    if len( args.plots ) > 0:
+        for idx, name in enumerate( clPlots ):
+            plt.plot( x, np.array(model.plotvec[idx])/qs, label = name )
+    else: # do all plots
+        for name, val in model.molInfo.items():
+            plt.plot( x, np.array(model.getConcVec(val.index))/qs, label = name )
+
+    plt.xlabel('Time (s)')
+    plt.ylabel(ylabel)
+    plt.title( args.model )
+    plt.legend()
+    plt.show()
 
 
 if __name__ == '__main__':
