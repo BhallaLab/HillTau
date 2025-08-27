@@ -407,6 +407,7 @@ def jsontoPng(modelpath, outputfile, ranksep = 0.1, hasLegend = True, fontsize =
 		for p,q in startstringdigit.items():
 			if p in displayGroups:
 				for m,n in q.items():
+					print( "Label = ", m )
 					f_graph.write("\n"+n+"[label=\""+m+"\"]")	
 	
 	if hasLegend:
