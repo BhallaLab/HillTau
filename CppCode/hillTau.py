@@ -327,7 +327,7 @@ def sortReacs( model ):
         order = model.molInfo[name].order
         model.assignReacSeq( name, order )
 
-def writeOutput( fname, model, plotvec, x ):
+def writeOutput( fname, model, x ):
     with open( fname, "w" ) as fd:
         olist = sorted([ i for i in model.molInfo])
         header = "Time\t"
@@ -336,7 +336,9 @@ def writeOutput( fname, model, plotvec, x ):
         for name in olist:
             header += name + "\t"
             idx = model.molInfo[name].index
-            outvec.append( [str(v) for v in plotvec[idx] ] )
+            #outvec.append( [str(v) for v in plotvec[idx] ] )
+            outvec.append( [str(v) for v in model.getConcVec( idx ) ] )
+            #print( f"dumping mol {name}, idx={idx}, val={outvec[-1][-1]}")
         ry = range( len( outvec ) )
         fd.write( header + "\n" )
         for i in rx:
@@ -400,7 +402,10 @@ def main():
     if len( args.plots ) > 0 :
         #clPlots = [ i.strip() for i in clPlots if i in model.molInfo]
         for pp in clPlots:
-            model.addPlot( pp )
+            if pp == 'x':
+                continue
+            elif pp in model.molInfo:
+                model.addPlot( pp )
     
     model.reinit()
     currTime = 0.0
@@ -413,8 +418,8 @@ def main():
 
     x = model.plotTimePoints
 
-    if args.output:
-        writeOutput( args.output, model, plotvec, x )
+    if args.output: # generate all mol outputs.
+        writeOutput( args.output, model, x )
 
     qu = jsonDict.get( "QuantityUnits" )
     if not qu:
@@ -426,18 +431,23 @@ def main():
         ylabel = 'Conc (mM)'
         qs = 1
 
+    doPlots = False
     if len( args.plots ) > 0:
         for idx, name in enumerate( clPlots ):
-            plt.plot( x, np.array(model.plotvec[idx])/qs, label = name )
+            if name != 'x':
+                plt.plot( x, np.array(model.plotvec[idx])/qs, label = name )
+                doPlots = True
     else: # do all plots
+        doPlots = True
         for name, val in model.molInfo.items():
             plt.plot( x, np.array(model.getConcVec(val.index))/qs, label = name )
 
-    plt.xlabel('Time (s)')
-    plt.ylabel(ylabel)
-    plt.title( args.model )
-    plt.legend()
-    plt.show()
+    if doPlots:
+        plt.xlabel('Time (s)')
+        plt.ylabel(ylabel)
+        plt.title( args.model )
+        plt.legend()
+        plt.show()
 
 
 if __name__ == '__main__':
