@@ -40,7 +40,7 @@ signaling networks.<br>
 **Bhalla US.**<br>
 *PLoS Comput Biol.* 2021
 
-[DOI](10.1371/journal.pcbi.1009621)
+[DOI](https://doi.org/10.1371/journal.pcbi.1009621)
 
 
 ## Installation
